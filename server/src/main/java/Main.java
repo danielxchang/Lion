@@ -1,10 +1,21 @@
+import com.google.gson.Gson;
+import inventory.DistributorInventory;
+import inventory.OwnInventory;
+import item.InventoryItem;
+import restock.RestockItem;
+import restock.RestockRequest;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static spark.Spark.*;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static <string> void main(String[] args) throws IOException {
+        Gson gson = new Gson();
         WorkbookReader wbReader = new WorkbookReader();
 
         //This is required to allow GET and POST requests with the header 'content-type'
@@ -25,27 +36,52 @@ public class Main {
 
         //TODO: Return JSON containing the candies for which the stock is less than 25% of it's capacity
         get("/low-stock", (request, response) -> {
+            response.type("application/json");
+
+            // Retrieve inventory data from workbook
             ArrayList<InventoryItem> inventoryData = wbReader.getInventoryData("Inventory");
             OwnInventory inventory = new OwnInventory();
             for (InventoryItem item: inventoryData) {
                 inventory.addToInventory(item);
             }
 
+            // Add all low stock items below 25% mark to ArrayList
+            ArrayList<InventoryItem> lowStockItems = new ArrayList<>();
             for (InventoryItem item: inventory.getItems().values()) {
                 if (item.isLowStock(inventory.getLowStockTrigger())) {
-                    // TODO: Replace print code with code returning JSON
-                    System.out.println(item);
+                    lowStockItems.add(item);
                 }
             }
-            return null;
+
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("items", lowStockItems);
+            return gson.toJson(responseData);
         });
 
         //TODO: Return JSON containing the total cost of restocking candy
         post("/restock-cost", (request, response) -> {
-            ArrayList<DistributorInventory> distributors= wbReader.getDistributorData("Distributors");
-            // TODO: Implement code to process restock request data and calculate restock cost
-            System.out.println(distributors);
-            return null;
+            response.type("application/json");
+            RestockRequest data = gson.fromJson(request.body(), RestockRequest.class);
+
+            // Get distributor data from workbook
+            ArrayList<DistributorInventory> distributors = wbReader.getDistributorData("Distributors");
+            ArrayList<RestockItem> restockItems = data.getItems();
+
+            // check each distributor for restock items
+            for (DistributorInventory distributor: distributors) {
+                // update restock item's lowestUnitCost property if distributor has in stock
+                for (RestockItem item: restockItems) {
+                    String sku = item.getSku();
+                    if (distributor.hasItem(sku)) {
+                        float unitCost = distributor.getUnitCost(sku);
+                        item.setLowestUnitCost(unitCost);
+                    }
+                }
+            }
+
+            // calculate total restock cost and store total as property on data restock.RestockRequest object
+            data.calculateTotalRestock();
+            return gson.toJson(data);
         });
 
     }

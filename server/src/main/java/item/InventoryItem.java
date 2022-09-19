@@ -1,10 +1,12 @@
+package item;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class InventoryItem extends Item {
-    private String stock;
-    private String capacity;
+    private int stock;
+    private int capacity;
 
     public InventoryItem(ArrayList<String> data) {
         super(data);
@@ -17,13 +19,15 @@ public class InventoryItem extends Item {
                     setName(data.get(i));
                     break;
                 case 1:
-                    setStock(data.get(i));
+                    int stock = (int) Float.parseFloat(data.get(i));
+                    setStock(stock);
                     break;
                 case 2:
-                    setCapacity(data.get(i));
+                    int capacity = (int) Float.parseFloat(data.get(i));
+                    setCapacity(capacity);
                     break;
                 case 3:
-                    int sku = (int) Double.parseDouble(data.get(i));
+                    int sku = (int) Float.parseFloat(data.get(i));
                     setSku(Integer.toString(sku));
                 default:
             }
@@ -31,7 +35,7 @@ public class InventoryItem extends Item {
     }
 
     public String toString() {
-        Map<String, String> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
         data.put("name", getName());
         data.put("stock", getStock());
         data.put("capacity", getCapacity());
@@ -39,25 +43,25 @@ public class InventoryItem extends Item {
         return data.toString();
     }
 
-    public String getStock() {
+    public int getStock() {
         return stock;
     }
 
-    public String getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
-    public void setStock(String stock) {
+    public void setStock(int stock) {
         this.stock = stock;
     }
 
-    public void setCapacity(String capacity) {
+    public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
 
     public boolean isLowStock(int trigger) {
-        double stock = Double.parseDouble(getStock());
-        double capacity = Double.parseDouble(getCapacity());
+        float stock = getStock();
+        int capacity = getCapacity();
         return (stock / capacity) * 100 < trigger;
     }
 }

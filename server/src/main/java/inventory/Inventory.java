@@ -1,3 +1,5 @@
+package inventory;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,5 +12,9 @@ public class Inventory<T> {
 
     public String toString() {
         return items.toString();
+    }
+
+    public T getItem(String sku) {
+        return items.get(sku);
     }
 }

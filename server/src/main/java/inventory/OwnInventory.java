@@ -1,3 +1,7 @@
+package inventory;
+
+import item.InventoryItem;
+
 public class OwnInventory extends Inventory<InventoryItem> {
     int lowStockTrigger = 25;
 
