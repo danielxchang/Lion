@@ -1,8 +1,9 @@
 import { useRef } from "react";
+import classes from "./ItemRow.module.css";
 
 export default function ItemRow(props) {
   const inputRef = useRef();
-  const maxAllowed = props.capacity - props.inStock;
+  const maxAllowed = props.capacity - props.stock;
 
   const onChangeHandler = () => {
     if (+inputRef.current.value > maxAllowed) {
@@ -16,11 +17,12 @@ export default function ItemRow(props) {
   return (
     <tr>
       <td>{props.sku}</td>
-      <td>{props.itemName}</td>
-      <td>{props.inStock}</td>
+      <td>{props.name}</td>
+      <td>{props.stock}</td>
       <td>{props.capacity}</td>
       <td>
         <input
+          className={classes.orderInput}
           type="number"
           min="0"
           max={`${maxAllowed}`}
